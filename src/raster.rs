@@ -30,12 +30,15 @@ pub fn decode(bytes: &[u8]) -> Result<DynamicImage> {
 /// réduction à la largeur imprimable, centrage, puis noir et blanc
 /// (tramage Floyd–Steinberg, ou simple seuil si `dither` est faux).
 pub fn prepare(img: &DynamicImage, dither: bool) -> GrayImage {
+    // resize
     let img =
         if img.width() > PRINT_WIDTH { img.resize(PRINT_WIDTH, u32::MAX, FilterType::Lanczos3) } else { img.clone() };
 
     // Compose sur fond blanc pleine largeur, image centrée.
     let rgba = img.to_rgba8();
     let offset = (PRINT_WIDTH - rgba.width()) / 2;
+    
+    // On crée une image de sortie en niveaux de gris, initialisée à blanc.
     let mut gray = GrayImage::from_pixel(PRINT_WIDTH, rgba.height(), Luma([255]));
     for (x, y, p) in rgba.enumerate_pixels() {
         let [r, g, b, a] = p.0.map(u32::from);
@@ -44,9 +47,13 @@ pub fn prepare(img: &DynamicImage, dither: bool) -> GrayImage {
         gray.put_pixel(x + offset, y, Luma([blended as u8]));
     }
 
+    // On ne gère pas les niveaux de gris : on convertit en noir et blanc, 
+    // soit par tramage, soit par simple seuil.
+    // tramage si dither (=true)
     if dither {
         imageops::dither(&mut gray, &BiLevel);
     } else {
+    // sinon, simple seuil sur brillance de gris à < 128     
         for p in gray.pixels_mut() {
             p.0[0] = if p.0[0] < 128 { 0 } else { 255 };
         }
@@ -61,16 +68,32 @@ pub fn load(path: &Path, dither: bool) -> Result<GrayImage> {
 }
 
 /// Envoie une image déjà préparée (largeur `PRINT_WIDTH`), découpée en bandes raster.
+/// L'imprimante ne sait pas gérer les bandes images de plus de STRIP_HEIGHT points de haut, 
+/// donc on découpe en bandes de STRIP_HEIGHT points. Cette valeur est définie en constante,
+/// plus hait dans le code.   
+/// 
+/// Le format PNG est utilisé pour la compression, car l'imprimante ne sait pas gérer les images brutes.
+/// Le format PNG est supporté par l'imprimante, mais pas par le pilote escpos-rs.
+/// 
 pub fn print_gray<D: Driver>(printer: &mut Printer<D>, gray: &GrayImage) -> Result<()> {
+    // L'imprimante ne sait pas gérer les images de plus de 256 points de haut, donc on découpe en bandes.
     let mut y = 0;
     while y < gray.height() {
+        // h = hauteur de la bande, au plus STRIP_HEIGHT, mais pas plus que le reste de l'image.
         let h = STRIP_HEIGHT.min(gray.height() - y);
+        // strip = bande de l'image, en mémoire, pour l'envoyer à l'imprimante.
         let strip = imageops::crop_imm(gray, 0, y, PRINT_WIDTH, h).to_image();
         let mut png = Vec::new();
+        
+        // On encode la bande en PNG, pour l'envoyer à l'imprimante.
         DynamicImage::ImageLuma8(strip).write_to(&mut Cursor::new(&mut png), ImageFormat::Png)?;
+        
         // BitImageOption n'est pas Clone : on en recrée une par bande.
         let option = BitImageOption::new(None, None, BitImageSize::Normal)?;
+
+        // On envoie la bande à l'imprimante.
         printer.bit_image_from_bytes_option(&png, option)?;
+        // On avance dans l'image.
         y += h;
     }
     Ok(())
