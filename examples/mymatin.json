@@ -1,0 +1,32 @@
+{
+  "cut": true,
+  "blocks": [
+    { "type": "title", "text": "Bonjour !" },
+    { "type": "date" },
+    { "type": "saint" },
+    
+    { "type": "separator", "style": "~" },
+
+    
+    { "type": "quote" },
+    { "type": "holidays", "count": 3 },
+    { "type": "countdown", "label": "Noël", "date": "2026-12-25" },
+    { "type": "moon" },
+    { "type": "on_this_day", "count": 3 },
+
+    { "type": "separator", "style": "~" },
+    
+    { "type": "weather", "location": "Liège", "days": 3 },
+    { "type": "weather", "location": "DUBLIN", "days": 10 },
+    { "type": "weather", "location": "GALWAY", "days": 10 },
+    { "type": "weather", "location": "Burgos", "days": 5 },
+
+    { "type": "separator", "style": "~" },
+    
+    { "type": "air_quality", "location": "Liège" },
+    { "type": "air_quality", "location": "DUBLIN" },
+    { "type": "air_quality", "location": "GALWAY" },
+    { "type": "air_quality", "location": "Burgos, Spain" }
+    
+  ]
+}
