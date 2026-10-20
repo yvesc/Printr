@@ -190,7 +190,14 @@ pub fn error(e: &anyhow::Error) {
 }
 
 /// Bannière de démarrage du serveur.
-pub fn banner(listen: &str, destination: &str, claude: Option<&str>, cache: Option<&str>, data: &str, users: usize) {
+pub fn banner(
+    listen: &str,
+    destination: &str,
+    claude: Option<(&str, &str)>,
+    cache: Option<&str>,
+    data: &str,
+    users: usize,
+) {
     let row = |key: &str, value: String| eprintln!("  {DIM}{key:<11}{DIM:#} {value}");
     eprintln!("{BOLD}printr {}{BOLD:#} {DIM}·{DIM:#} {}", env!("CARGO_PKG_VERSION"), t("serveur prêt", "server ready"));
     let shown = listen.replace("0.0.0.0", "localhost");
@@ -199,12 +206,12 @@ pub fn banner(listen: &str, destination: &str, claude: Option<&str>, cache: Opti
     row(
         "claude",
         match claude {
-            Some(model) => format!("{OK}✓{OK:#} {model}"),
+            Some((model, backend)) => format!("{OK}✓{OK:#} {model} {DIM}({backend}){DIM:#}"),
             None => format!(
                 "{WARN}✗{WARN:#} {}",
                 t(
-                    "ANTHROPIC_API_KEY absente (horoscope et mot du jour indisponibles)",
-                    "ANTHROPIC_API_KEY missing (horoscope and word of the day unavailable)"
+                    "ni ANTHROPIC_API_KEY ni CLI Claude (horoscope et mot du jour indisponibles)",
+                    "no ANTHROPIC_API_KEY nor Claude CLI (horoscope and word of the day unavailable)"
                 )
             ),
         },

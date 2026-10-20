@@ -409,7 +409,27 @@ select.input { appearance: none; padding-right: 38px;
 }
 
 /* Catalogue des blocs */
-.catalog-search { position: sticky; top: 0; z-index: 2; padding-bottom: 10px; background: var(--surface); }
+/* Collée en haut de la fenêtre, marge intérieure comprise : rien ne défile au-dessus. */
+.catalog-search { position: sticky; top: -10px; z-index: 2; margin-top: -10px; padding: 10px 0; background: var(--surface); }
+/* Modèles de tickets, dans le composeur vide. */
+.templates { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; text-align: left; }
+.template {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 4px; padding: 12px;
+  border: 1px solid var(--line); border-radius: 14px; background: var(--surface); color: var(--ink);
+  font: inherit; cursor: pointer; text-align: left; transition: border-color .15s, transform .12s;
+}
+.template:hover { border-color: var(--accent); }
+.template:active { transform: scale(.98); }
+.template .big-emoji { font-size: 26px; margin: 0; }
+.template .muted { font-size: 12.5px; line-height: 1.35; }
+.cat-filters { display: flex; gap: 6px; margin-top: 10px; overflow-x: auto; scrollbar-width: none; }
+.cat-filters::-webkit-scrollbar { display: none; }
+.cat-filters button {
+  flex: none; height: 32px; padding: 0 12px; border: 1.5px solid var(--line-strong); border-radius: 999px;
+  background: var(--surface); color: var(--ink-2); font: inherit; font-size: 13.5px; font-weight: 700; cursor: pointer;
+  transition: background .15s, color .15s, border-color .15s;
+}
+.cat-filters button.on { background: var(--accent-soft); color: var(--accent); border-color: var(--accent); }
 .catalog-group h4 { margin: 18px 2px 8px; font-size: 12.5px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
 .catalog { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
 .cat-item { position: relative; }
@@ -463,6 +483,12 @@ select.input { appearance: none; padding-right: 38px;
 .paper .ln.c { text-align: center; }
 .paper .ln.rt { text-align: right; }
 .paper .feed { height: 1.32em; }
+/* Coupe au milieu du ticket : gros ciseaux sur une ligne pointillée d'un bord à l'autre du papier
+   (la marge négative compense le padding de 6,5 % du papier). */
+.paper .cut { display: flex; align-items: center; gap: .5em; margin: .5em -7.5% 1.5em; color: var(--paper-ink); }
+.paper .cut::before, .paper .cut::after { content: ""; flex: 1; border-top: 3px dashed currentColor; opacity: .55; }
+.paper .cut::before { flex: 0 0 1.2em; }
+.paper .cut .icon { width: 3em; height: 3em; flex: none; stroke-width: 1.8; }
 .paper .img { width: 100%; margin: 2px 0; image-rendering: pixelated; }
 .paper-meta { display: flex; justify-content: space-between; gap: 8px; margin: 12px 4px 0; font-size: 12.5px; color: var(--muted); }
 .paper-empty { padding: 36px 12px; text-align: center; color: #9a9a9a; font-family: var(--font); font-size: 14px; }
@@ -555,6 +581,7 @@ select.input { appearance: none; padding-right: 38px;
   .sheet.wide { max-width: 860px; }
   .sheet .grabber { display: none; }
   .sheet-foot { bottom: -22px; padding-bottom: 8px; }
+  .catalog-search { top: -18px; margin-top: -18px; padding-top: 18px; }
 }
 @keyframes rise { from { transform: translateY(14px) scale(.98); opacity: 0; } }
 
@@ -568,6 +595,7 @@ select.input { appearance: none; padding-right: 38px;
   box-shadow: var(--shadow-3); animation: toast-in .3s cubic-bezier(.2, .9, .3, 1.2);
 }
 .toast.error { background: var(--danger); color: #fff; }
+.toast.warn { background: var(--warn); color: #fff; }
 .toast .emoji { font-size: 20px; }
 @keyframes toast-in { from { transform: translateY(16px) scale(.96); opacity: 0; } }
 
@@ -691,7 +719,36 @@ select.input { appearance: none; padding-right: 38px;
 .update-card .grow { display: grid; gap: 2px; }
 .update-card .muted { font-size: 13px; }
 .update-card svg { color: var(--accent); flex-shrink: 0; }
+/* Réglage de l'administrateur (blocs proposés) : une carte qu'on touche pour l'ouvrir. */
+.setting-card {
+  display: flex; align-items: center; gap: 12px; width: 100%; padding: 12px 14px; text-align: left;
+  border-radius: 14px; border: 1px solid var(--line); background: var(--surface); color: var(--ink);
+  font: inherit; cursor: pointer; transition: border-color .15s;
+}
+.setting-card:hover { border-color: var(--line-strong); }
+.setting-card .big-emoji { font-size: 26px; }
+.setting-card .grow { display: grid; gap: 2px; }
+.setting-card .muted { font-size: 13px; }
+.setting-card svg { color: var(--muted); flex-shrink: 0; }
+.block-toggles { display: flex; flex-wrap: wrap; gap: 6px; }
+.block-toggles button {
+  height: 34px; padding: 0 12px; border: 1.5px solid var(--line-strong); border-radius: 999px;
+  background: var(--surface); color: var(--ink); font: inherit; font-size: 14px; font-weight: 700; cursor: pointer;
+  transition: background .15s, color .15s, border-color .15s, opacity .15s;
+}
+.block-toggles button.off { background: var(--surface-2); border-color: transparent; color: var(--muted); text-decoration: line-through; opacity: .75; }
 .version a { color: var(--accent); font-weight: 700; text-decoration: none; }
 
 /* Historique : rappel discret que l'administrateur peut revoir les tickets. */
 .history-note { margin: 18px 4px 0; font-size: 12.5px; text-align: center; }
+
+/* Imprimante : état dans la barre latérale, bandeau quand elle est absente. */
+.printer-state { margin: 0 12px 6px; font-size: 12.5px; font-weight: 700; color: var(--muted); display: flex; align-items: center; gap: 6px; }
+.printer-state::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--ok); }
+.printer-state.off { color: var(--danger); }
+.printer-state.off::before { background: var(--danger); }
+.printer-banner {
+  display: flex; align-items: center; gap: 10px; margin: 0 auto 4px; max-width: 1180px; width: calc(100% - 32px);
+  padding: 10px 14px; border-radius: 14px; background: var(--warn-soft); color: var(--warn); font-size: 14px; font-weight: 600;
+}
+.printer-banner .emoji { font-size: 18px; }

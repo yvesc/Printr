@@ -26,6 +26,12 @@ W = {
 }
 
 
+async def snap(page, path):
+    """Capture d'écran, annoncée sur la sortie (scripts/illustrations.sh affiche la progression)."""
+    await page.screenshot(path=path)
+    print(path, flush=True)
+
+
 async def login(page, name, password="demo1234"):
     await page.goto(URL)
     await page.get_by_text(name, exact=True).first.click()
@@ -49,29 +55,29 @@ async def mobile(p):
     await page.wait_for_timeout(500)
     await page.get_by_text("Alex", exact=True).first.click()
     await page.wait_for_timeout(300)
-    await page.screenshot(path=f"{OUT}/mobile-login.png")
+    await snap(page, f"{OUT}/mobile-login.png")
     await login(page, "Alex")
     await page.wait_for_timeout(600)
-    await page.screenshot(path=f"{OUT}/mobile-home.png")
+    await snap(page, f"{OUT}/mobile-home.png")
 
     await open_preset(page, W["games"])
     await page.get_by_role("button", name=W["preview"]).first.click()
     await page.wait_for_timeout(1500)
-    await page.screenshot(path=f"{OUT}/mobile-preview.png")
+    await snap(page, f"{OUT}/mobile-preview.png")
     await page.keyboard.press("Escape")
 
     await page.goto(URL + "/#/compose")
     await page.wait_for_timeout(400)
     await page.locator(".block-head").nth(1).click()
     await page.wait_for_timeout(400)
-    await page.screenshot(path=f"{OUT}/mobile-compose.png")
+    await snap(page, f"{OUT}/mobile-compose.png")
 
     await page.goto(URL + "/#/message")
     await page.set_input_files("input[type=file]", PHOTO)
     await page.wait_for_timeout(1500)
     await page.fill("textarea", W["note"])
     await page.wait_for_timeout(1500)
-    await page.screenshot(path=f"{OUT}/mobile-message.png")
+    await snap(page, f"{OUT}/mobile-message.png")
     await browser.close()
 
 
@@ -82,12 +88,12 @@ async def desktop(p, scheme):
     page = await ctx.new_page()
     await login(page, "Alex")
     await page.wait_for_timeout(600)
-    await page.screenshot(path=f"{OUT}/desktop-home-{scheme}.png")
+    await snap(page, f"{OUT}/desktop-home-{scheme}.png")
     await open_preset(page, W["games"])
-    await page.screenshot(path=f"{OUT}/desktop-compose-{scheme}.png")
+    await snap(page, f"{OUT}/desktop-compose-{scheme}.png")
     await page.click(f"text={W['add_block']}")
     await page.wait_for_timeout(600)
-    await page.screenshot(path=f"{OUT}/desktop-catalog-{scheme}.png")
+    await snap(page, f"{OUT}/desktop-catalog-{scheme}.png")
     await browser.close()
 
 

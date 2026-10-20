@@ -215,6 +215,8 @@ chown root:printr "$ENV"
 chmod 660 "$ENV"
 if grep -q '^ANTHROPIC_API_KEY=.\+' "$ENV"; then
   same "clé Claude présente"
+elif grep -q '^CLAUDE_CODE_OAUTH_TOKEN=.\+' "$ENV"; then
+  same "jeton de la CLI Claude présent (abonnement, sans clé API)"
 elif [ "$ASK" = 1 ]; then
   printf '  %s?%s Clé API Claude (horoscope Claude, mot du jour), ou Entrée pour passer : ' "$CYAN" "$R"
   read -rs key; echo
@@ -224,10 +226,10 @@ elif [ "$ASK" = 1 ]; then
     cat "$ENV.tmp" > "$ENV" && rm -f "$ENV.tmp"
     ok "clé Claude enregistrée"
   else
-    warn "sans clé : horoscope Claude et mot du jour indisponibles (à ajouter dans $ENV)"
+    warn "sans clé : horoscope Claude et mot du jour indisponibles (clé ou CLI Claude à régler dans $ENV)"
   fi
 else
-  warn "pas de clé Claude : à ajouter dans $ENV (horoscope Claude et mot du jour)"
+  warn "pas de clé Claude : à ajouter dans $ENV, ou CLI Claude (horoscope Claude et mot du jour)"
 fi
 value() { sed -n "s/^$1=//p" "$ENV" | tail -1 | tr -d '"'"'"; }
 

@@ -53,8 +53,7 @@ pub fn build(ctx: &Ctx) -> Result<Doc> {
             ));
         }
         None => {
-            let claude =
-                ctx.claude.as_ref().context(i18n::t("ANTHROPIC_API_KEY manquante", "ANTHROPIC_API_KEY is missing"))?;
+            let claude = ctx.claude.as_ref().context(crate::claude::missing())?;
             let past = cache.map(|c| c.history(history, HISTORY)).unwrap_or_default();
             // Une réponse incomplète est rare : on retente une fois avant d'abandonner.
             let w = match generate(claude, date, &past)? {

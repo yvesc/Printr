@@ -45,6 +45,37 @@ pub fn uploads_dir() -> Option<PathBuf> {
     data_dir().map(|d| d.join("images"))
 }
 
+/// Octets ESC/POS des tickets en file d'attente.
+fn queue_dir() -> Option<PathBuf> {
+    data_dir().map(|d| d.join("queue"))
+}
+
+fn queue_file(id: &str) -> Option<PathBuf> {
+    (!id.is_empty() && id.chars().all(|c| c.is_ascii_hexdigit()))
+        .then(|| queue_dir().map(|d| d.join(format!("{id}.bin"))))
+        .flatten()
+}
+
+/// Garde les octets d'un ticket qui attend l'imprimante.
+pub fn save_job(id: &str, bytes: &[u8]) -> Result<()> {
+    let path = queue_file(id).context(t("répertoire de données introuvable", "data directory not found"))?;
+    if let Some(dir) = path.parent() {
+        fs::create_dir_all(dir)?;
+    }
+    fs::write(&path, bytes)?;
+    Ok(())
+}
+
+pub fn load_job(id: &str) -> Option<Vec<u8>> {
+    fs::read(queue_file(id)?).ok()
+}
+
+pub fn remove_job(id: &str) {
+    if let Some(path) = queue_file(id) {
+        let _ = fs::remove_file(path);
+    }
+}
+
 /// Tickets imprimés gardés pour l'aperçu de l'historique (réservé à l'administrateur).
 fn previews_dir() -> Option<PathBuf> {
     data_dir().map(|d| d.join("previews"))
@@ -105,6 +136,12 @@ pub struct User {
     /// administrateur, le plus ancien compte (voir `Store::is_admin`).
     #[serde(default)]
     pub admin: bool,
+    /// Blocs favoris du catalogue, dans l'ordre où ils ont été choisis.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub favorites: Vec<String>,
+    /// Derniers blocs ajoutés à un ticket, du plus récent au plus ancien.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub recent: Vec<String>,
 }
 
 #[derive(Serialize, Deserialize, Clone)]
@@ -149,6 +186,12 @@ pub struct Preset {
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct HistoryEntry {
+    /// Ticket en file d'attente (imprimante absente) : identifiant de la tâche, tant qu'il attend.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub queued: Option<String>,
+    /// Imprimé plus tard que demandé, sorti de la file d'attente à cette heure-là.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub printed_at: Option<DateTime<Utc>>,
     /// Identifiant de l'aperçu gardé (voir `save_preview`), pour l'administrateur.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub preview: Option<String>,
@@ -189,6 +232,23 @@ pub struct Data {
     pub history: Vec<HistoryEntry>,
     #[serde(default)]
     pub shopping: Vec<ShoppingItem>,
+    /// Tickets qui attendent le retour de l'imprimante, du plus ancien au plus récent ; leurs
+    /// octets ESC/POS sont dans `queue/`.
+    #[serde(default)]
+    pub queue: Vec<QueuedJob>,
+    /// Blocs retirés du catalogue par l'administrateur (ceux dont la famille ne se sert pas). Les
+    /// tickets qui les utilisent déjà continuent de fonctionner.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub hidden_blocks: Vec<String>,
+}
+
+/// Un ticket prêt, qui attend l'imprimante.
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct QueuedJob {
+    pub id: String,
+    pub at: DateTime<Utc>,
+    pub by: String,
+    pub label: String,
 }
 
 /// Lit les données sur le disque, sans rien créer : pour les blocs (liste de courses, bilan).
@@ -280,6 +340,10 @@ impl Store {
         self.data.users.iter().find(|u| u.id == id)
     }
 
+    pub fn user_mut(&mut self, id: &str) -> Option<&mut User> {
+        self.data.users.iter_mut().find(|u| u.id == id)
+    }
+
     fn find_by_name(&self, name: &str) -> Option<&User> {
         self.data.users.iter().find(|u| u.name.eq_ignore_ascii_case(name.trim()))
     }
@@ -297,7 +361,15 @@ impl Store {
         let password_hash = hash(password)?;
         let id = new_id(8);
         let admin = self.data.users.is_empty();
-        self.data.users.push(User { id: id.clone(), name: name.to_owned(), color, password_hash, admin });
+        self.data.users.push(User {
+            id: id.clone(),
+            name: name.to_owned(),
+            color,
+            password_hash,
+            admin,
+            favorites: Vec::new(),
+            recent: Vec::new(),
+        });
         Ok(id)
     }
 

@@ -59,16 +59,20 @@ done_ "$arch · $("${SSH[@]}" "$HOST" '. /etc/os-release 2>/dev/null && echo "$P
 
 step "Compilation pour $TARGET…"
 log=$(mktemp)
+# Dossier de compilation à part pour cross : le script de compilation (build.rs) construit ici par
+# cargo ne tournerait pas dans le conteneur de cross, à la glibc plus ancienne.
+OUTDIR=target/cross
 if command -v cross >/dev/null; then
-  cross build --release --target "$TARGET" >"$log" 2>&1 || { cat "$log" >&2; fail "compilation échouée"; }
+  cross build --release --target "$TARGET" --target-dir "$OUTDIR" >"$log" 2>&1 || { cat "$log" >&2; fail "compilation échouée"; }
 else
   # Sans cross, seule une cible identique à cette machine est possible (glibc récente : risqué).
   [ "$arch" = "$(uname -m)" ] || fail "cross est nécessaire pour compiler vers $arch (cargo install cross)"
+  OUTDIR=target
   cargo build --release --target "$TARGET" >"$log" 2>&1 || { cat "$log" >&2; fail "compilation échouée"; }
 fi
 rm -f "$log"
 mkdir -p "target/deploy/$TARGET"
-cp "target/$TARGET/release/printr" "target/deploy/$TARGET/printr"
+cp "$OUTDIR/$TARGET/release/printr" "target/deploy/$TARGET/printr"
 llvm-strip "target/deploy/$TARGET/printr" 2>/dev/null || strip "target/deploy/$TARGET/printr" 2>/dev/null || true
 BIN=target/deploy/$TARGET/printr
 done_ "$(du -h "$BIN" | cut -f1)"

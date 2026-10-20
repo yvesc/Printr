@@ -17,6 +17,7 @@ mod cp858;
 mod doc;
 mod draw;
 mod guard;
+mod mqtt;
 mod net;
 mod output;
 mod raster;
@@ -41,7 +42,7 @@ const STYLES: Styles = Styles::styled()
 
 /// Nom de la version mineure en cours : un pionnier de l'imprimerie, par ordre alphabétique (voir
 /// le CHANGELOG). À changer à chaque nouvelle version mineure, en même temps que le CHANGELOG.
-const CODENAME: &str = "Hoe";
+const CODENAME: &str = "Jenson";
 
 /// Imprime des tickets sur une Epson TM-T88V (ESC/POS).
 #[derive(Parser)]
@@ -70,9 +71,13 @@ struct Cli {
     #[arg(long, value_name = "HÔTE:PORT", conflicts_with = "device")]
     tcp: Option<String>,
 
-    /// Affiche un aperçu dans le terminal au lieu d'imprimer
+    /// Affiche un aperçu dans le terminal au lieu d'imprimer (sans appel payant à Claude)
     #[arg(long, global = true)]
     preview: bool,
+
+    /// Avec --preview : fait quand même rédiger les blocs Claude (payant)
+    #[arg(long, global = true, requires = "preview")]
+    claude: bool,
 
     /// Régénère les actualités, les horaires du soleil, l'horoscope et le mot du jour
     #[arg(long, global = true)]
@@ -265,7 +270,8 @@ fn in_english(command: clap::Command) -> clap::Command {
             "tcp" => {
                 ("Sends over TCP (network printer or emulator), e.g. 127.0.0.1:9100, or $PRINTR_TCP", Some("HOST:PORT"))
             }
-            "preview" => ("Shows a preview in the terminal instead of printing", None),
+            "preview" => ("Shows a preview in the terminal instead of printing (no paid Claude call)", None),
+            "claude" => ("With --preview: still have Claude write its blocks (paid)", None),
             "refresh" => ("Regenerates the news, sun times, horoscope and word of the day", None),
             "quiet" => ("Only shows errors", None),
             "help" => ("Shows help", None),
@@ -393,7 +399,10 @@ fn run(cli: Cli) -> Result<()> {
                 serde_json::from_str(&json).context(t("ticket JSON invalide", "invalid ticket JSON"))?;
             let mut progress: Box<dyn blocks::Progress> =
                 if cli.quiet { Box::new(blocks::Silent) } else { Box::new(ui::Console::new()) };
-            let (doc, ticket_reports) = ticket.build(&blocks::Ctx::new(cli.refresh), progress.as_mut());
+            // Un aperçu ne coûte rien, comme dans l'appli : Claude seulement si on le demande.
+            let ctx = blocks::Ctx::new(cli.refresh);
+            let ctx = if cli.preview && !cli.claude { ctx.for_preview() } else { ctx };
+            let (doc, ticket_reports) = ticket.build(&ctx, progress.as_mut());
             reports = ticket_reports;
             (doc, ticket.cut)
         }

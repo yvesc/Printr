@@ -89,6 +89,7 @@ pub enum Op {
     Image(GrayImage),
     Qr { data: String, size: u8 },
     Feed(u8),
+    Cut,
 }
 
 #[derive(Default)]
@@ -167,6 +168,17 @@ impl Doc {
         self
     }
 
+    /// Coupe le papier à cet endroit.
+    pub fn cut(&mut self) -> &mut Self {
+        self.ops.push(Op::Cut);
+        self
+    }
+
+    /// Le document se termine par une coupe : inutile d'en ajouter une à la fin.
+    pub fn ends_with_cut(&self) -> bool {
+        matches!(self.ops.last(), Some(Op::Cut))
+    }
+
     pub fn image(&mut self, img: GrayImage) -> &mut Self {
         self.ops.push(Op::Image(img));
         self
@@ -216,6 +228,11 @@ impl Doc {
                 Op::Feed(n) => {
                     printer.feeds(*n)?;
                 }
+                // `GS V A 0` : l'imprimante avance d'elle-même jusqu'à la lame avant de couper,
+                // la marge sous la dernière ligne est celle des `Feed` qui précèdent.
+                Op::Cut => {
+                    printer.cut()?;
+                }
             }
         }
         if text_area {
@@ -234,6 +251,7 @@ impl Doc {
                 Op::Image(img) => img.height(),
                 Op::Qr { data, size } => qr_modules(data.len()) * *size as u32 + 30,
                 Op::Feed(n) => 30 * *n as u32,
+                Op::Cut => 0,
             })
             .sum()
     }
@@ -242,9 +260,17 @@ impl Doc {
     /// (à afficher via `anstream`, qui les retire hors terminal).
     pub fn preview_styled(&self, cut: bool) -> String {
         let frame = anstyle::Style::new().dimmed();
-        let mut out = String::new();
-        out.push_str(&format!("{frame}╭{}╮{frame:#}\n", "─".repeat(PAPER + 2)));
-        let mut push = |content: String, visible: usize| {
+        let top = format!("{frame}╭{}╮{frame:#}\n", "─".repeat(PAPER + 2));
+        let side = (PAPER - 1) / 2;
+        let cut_edge = format!("{frame}╰{} ✂ {}╯{frame:#}\n", "╌".repeat(side), "╌".repeat(PAPER - 1 - side));
+        let mut out = top.clone();
+        // Après une coupe, le morceau suivant ne s'ouvre qu'à la ligne d'après : une coupe
+        // finale ferme le ticket sans en ouvrir un vide.
+        let open = std::cell::Cell::new(true);
+        let push = |out: &mut String, content: String, visible: usize| {
+            if !open.replace(true) {
+                out.push_str(&top);
+            }
             let fill = " ".repeat(PAPER.saturating_sub(visible));
             out.push_str(&format!("{frame}│{frame:#} {content}{fill} {frame}│{frame:#}\n"));
         };
@@ -252,11 +278,11 @@ impl Doc {
             match op {
                 Op::Line { text, style } => {
                     let (content, visible) = styled_line(text, style);
-                    push(content, visible);
+                    push(&mut out, content, visible);
                 }
                 Op::Image(img) => {
                     for row in image_preview(img) {
-                        push(row, PAPER);
+                        push(&mut out, row, PAPER);
                     }
                 }
                 Op::Qr { data, .. } => {
@@ -265,16 +291,21 @@ impl Doc {
                     let len = label.chars().count();
                     let pad = (PAPER - len) / 2;
                     let dim = anstyle::Style::new().dimmed();
-                    push(format!("{}{dim}{label}{dim:#}", " ".repeat(pad)), pad + len);
+                    push(&mut out, format!("{}{dim}{label}{dim:#}", " ".repeat(pad)), pad + len);
                 }
-                Op::Feed(n) => (0..*n).for_each(|_| push(String::new(), 0)),
+                Op::Feed(n) => (0..*n).for_each(|_| push(&mut out, String::new(), 0)),
+                Op::Cut => {
+                    out.push_str(&cut_edge);
+                    open.set(false);
+                }
             }
         }
-        if cut {
-            let side = (PAPER - 1) / 2;
-            out.push_str(&format!("{frame}╰{} ✂ {}╯{frame:#}\n", "╌".repeat(side), "╌".repeat(PAPER - 1 - side)));
-        } else {
-            out.push_str(&format!("{frame}╰{}╯{frame:#}\n", "─".repeat(PAPER + 2)));
+        if !self.ends_with_cut() {
+            if cut {
+                out.push_str(&cut_edge);
+            } else {
+                out.push_str(&format!("{frame}╰{}╯{frame:#}\n", "─".repeat(PAPER + 2)));
+            }
         }
         out
     }
@@ -314,6 +345,7 @@ impl Doc {
                 Op::Image(img) => png(img),
                 Op::Qr { data, .. } => crate::draw::qr_row(&[data.as_str()]).ok().and_then(|img| png(&img)),
                 Op::Feed(n) => Some(serde_json::json!({ "t": "feed", "n": n })),
+                Op::Cut => Some(serde_json::json!({ "t": "cut" })),
             })
             .collect();
         serde_json::json!({ "ops": ops, "height_dots": self.height_dots() })

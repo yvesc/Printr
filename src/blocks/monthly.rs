@@ -212,6 +212,8 @@ mod tests {
         let at = Local.with_ymd_and_hms(2026, 10, day, hour, 0, 0).unwrap().with_timezone(&chrono::Utc);
         HistoryEntry {
             preview: None,
+            queued: None,
+            printed_at: None,
             at,
             by: by.into(),
             label: "Ticket".into(),

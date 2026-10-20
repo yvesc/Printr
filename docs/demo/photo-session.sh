@@ -76,6 +76,7 @@ for ticket in "$DEMO_TICKETS"/*.json; do
   until [ "$(ls emulator/receipts/*.png 2>/dev/null | wc -l)" -gt "$before" ]; do sleep 0.3; done
   cp "$(ls -t emulator/receipts/*.png | head -1)" "$TICKETS/$name.png"
   chmod 644 "$TICKETS/$name.png"
+  echo "$TICKETS/$name.png"
 done
 pid=$(ss -ltnpH "sport = :$PORT_PRINTER" | grep -o 'pid=[0-9]*' | cut -d= -f2 | head -1)
 [ -n "$pid" ] && kill "$pid"

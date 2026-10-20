@@ -9,16 +9,16 @@ use crate::doc::{Doc, Style};
 use crate::{draw, i18n};
 
 /// Durée moyenne d'une lunaison, en jours.
-const SYNODIC_MONTH: f64 = 29.530_588_853;
+pub(super) const SYNODIC_MONTH: f64 = 29.530_588_853;
 
 /// Âge de la lune (en jours depuis la dernière nouvelle lune).
-fn age(now: DateTime<Utc>) -> f64 {
+pub(super) fn age(now: DateTime<Utc>) -> f64 {
     let reference = Utc.with_ymd_and_hms(2000, 1, 6, 18, 14, 0).unwrap();
     let days = (now - reference).num_seconds() as f64 / 86_400.0;
     days.rem_euclid(SYNODIC_MONTH)
 }
 
-fn name(age: f64) -> &'static str {
+pub(super) fn name(age: f64) -> &'static str {
     #[rustfmt::skip]
     const NAMES: [&str; 8] = [
         "Nouvelle lune",

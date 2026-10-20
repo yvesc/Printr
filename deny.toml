@@ -11,6 +11,14 @@ ignore = [
     # paste : macro abandonnée par son auteur, sans faille connue ; tirée par les décodeurs EXR et
     # AVIF de la bibliothèque image, dont Printr ne se sert pas.
     { id = "RUSTSEC-2024-0436", reason = "abandonnée, sans faille ; via image (EXR, AVIF)" },
+    # À régler en 1.10 : rumqttc 0.25.1 (dernière version publiée) tire encore rustls-webpki 0.102
+    # et rustls-pemfile, sans mise à jour possible de notre côté. Ne concerne que mqtts:// ; les
+    # failles demandent un certificat mal émis par une autorité de confiance ou une CRL piégée.
+    { id = "RUSTSEC-2026-0049", reason = "1.10 : rustls-webpki 0.102 via rumqttc (CRL)" },
+    { id = "RUSTSEC-2026-0098", reason = "1.10 : rustls-webpki 0.102 via rumqttc (name constraints)" },
+    { id = "RUSTSEC-2026-0099", reason = "1.10 : rustls-webpki 0.102 via rumqttc (name constraints)" },
+    { id = "RUSTSEC-2026-0104", reason = "1.10 : rustls-webpki 0.102 via rumqttc (CRL)" },
+    { id = "RUSTSEC-2025-0134", reason = "1.10 : rustls-pemfile non maintenu, via rumqttc" },
 ]
 
 [licenses]

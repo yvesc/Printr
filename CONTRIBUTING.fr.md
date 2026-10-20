@@ -22,7 +22,7 @@ Quelques variables d'environnement utiles :
 
 | Variable | Rôle |
 | --- | --- |
-| `ANTHROPIC_API_KEY` | Blocs Claude (`horoscope`, `word_of_the_day`). Facultative : sans elle, ces blocs affichent une erreur et le reste du ticket sort normalement. Attention, `--preview` en ligne de commande appelle bien Claude (et fait rédiger les définitions manquantes des grilles) : retire la clé pour des essais gratuits. |
+| `ANTHROPIC_API_KEY` | Blocs Claude (`horoscope`, `word_of_the_day`) ; sans elle, la CLI Claude Code est utilisée si elle est installée (`PRINTR_CLAUDE_BACKEND`, `PRINTR_CLAUDE_CLI`). Facultative : sans elle, ces blocs affichent une erreur et le reste du ticket sort normalement. `--preview` n'appelle jamais Claude (les blocs Claude affichent un texte d'attente) ; ajoute `--claude` pour avoir le vrai texte. |
 | `PRINTR_BARNUM` | Commande de [Barnum](https://github.com/XNinety9/Barnum) pour le bloc `barnum`, par exemple `python3 ../Barnum/main.py`. |
 | `PRINTR_DATA_DIR` | Comptes, presets et historique de l'interface web. Utilise un dossier jetable pour tes essais. |
 | `PRINTR_GLITCH` | Fréquence des glitchs (une impression sur N, 20 par défaut, 0 : jamais). |
@@ -286,6 +286,9 @@ d'exemple (voir `barnum.rs`).
 - L'interface vit dans `web/`. Avec `PRINTR_WEB_DIR=web`, un simple rechargement de la page
   suffit. Vérifie-la sur téléphone (390 px de large) comme sur ordinateur, en clair et en
   sombre.
+- **Avant chaque version**, `scripts/illustrations.sh` refait toutes les illustrations dans les deux
+  langues (exemples des blocs, captures de l'appli, tickets vitrines, image de partage), puis
+  construit le site ; `--sans-claude` évite tout appel à Claude (les blocs Claude gardent leur image).
 - Les captures du site et du README se régénèrent avec `docs/demo/photo-session.sh`, toujours
   sur des données fictives. N'y mets jamais de vraies données personnelles.
 - Les déclinaisons du logo se régénèrent avec

@@ -173,8 +173,7 @@ pub fn build(ctx: &Ctx, sign: &str, tone: Tone) -> Result<Doc> {
             return Ok(super::ai_placeholder(&format!("Horoscope · {name}"), i18n::t("L'horoscope", "The horoscope")));
         }
         None => {
-            let claude =
-                ctx.claude.as_ref().context(i18n::t("ANTHROPIC_API_KEY manquante", "ANTHROPIC_API_KEY is missing"))?;
+            let claude = ctx.claude.as_ref().context(crate::claude::missing())?;
             // Une réponse incomplète est rare : on retente une fois avant d'abandonner.
             let h = match generate(claude, date, name, tone)? {
                 h if h.is_complete() => h,

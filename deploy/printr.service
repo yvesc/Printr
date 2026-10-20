@@ -23,7 +23,8 @@ ProtectSystem=strict
 ProtectHome=yes
 PrivateTmp=yes
 # Garde-fous : un ticket qui s'emballe ne peut pas faire tomber la machine.
-MemoryMax=400M
+# 768 Mo : la CLI Claude, si elle remplace la clé API, prend à elle seule ~260 Mo par appel.
+MemoryMax=768M
 TasksMax=256
 # Aucun privilège, noyau et système intouchables, seulement des sockets réseau ordinaires.
 CapabilityBoundingSet=

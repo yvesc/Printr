@@ -22,7 +22,7 @@ A few useful environment variables:
 
 | Variable | What it does |
 | --- | --- |
-| `ANTHROPIC_API_KEY` | Claude blocks (`horoscope`, `word_of_the_day`). Optional: without it, these blocks show an error and the rest of the ticket prints normally. Note that `--preview` on the command line does call Claude (and writes missing arrow-word clues): unset the key for free tests. |
+| `ANTHROPIC_API_KEY` | Claude blocks (`horoscope`, `word_of_the_day`); without it, the Claude Code CLI is used if installed (`PRINTR_CLAUDE_BACKEND`, `PRINTR_CLAUDE_CLI`). Optional: without it, these blocks show an error and the rest of the ticket prints normally. `--preview` never calls Claude (Claude blocks show a placeholder); add `--claude` to get the real text. |
 | `PRINTR_BARNUM` | Command for [Barnum](https://github.com/XNinety9/Barnum) used by the `barnum` block, for example `python3 ../Barnum/main.py`. |
 | `PRINTR_DATA_DIR` | Accounts, presets and history of the web interface. Use a throwaway folder for your tests. |
 | `PRINTR_GLITCH` | How often glitches happen (one print in N, 20 by default, 0: never). |
@@ -280,6 +280,9 @@ sample response (see `barnum.rs`).
 
 - The interface lives in `web/`. With `PRINTR_WEB_DIR=web`, a simple page reload is enough. Check
   it on a phone (390 px wide) as well as on a computer, in light and dark mode.
+- **Before each version**, `scripts/illustrations.sh` remakes every illustration in both languages
+  (block examples, app screenshots, showcase tickets, link preview image), then builds the site;
+  `--sans-claude` avoids any Claude call (Claude blocks keep their current image).
 - The screenshots for the site and the README are regenerated with `docs/demo/photo-session.sh`,
   always with fictional data. Never put real personal data in them.
 - The logo variants are regenerated with `uv run --with pillow python docs/brand/make-assets.py`.

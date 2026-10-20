@@ -84,12 +84,48 @@ if [ ${#names[@]} -eq 0 ]; then
   done
 fi
 for name in "${names[@]}"; do
-  before=$(find emulator/receipts -name '*.png' | wc -l)
+  find emulator/receipts -name '*.png' | sort >"$DEMO/before"
+  before=$(wc -l <"$DEMO/before")
   source="docs/exemples/$name.json"
   [ -f "$OUT/$name.json" ] && source="$OUT/$name.json"
   $BIN -q --tcp "127.0.0.1:$PORT" print "$source"
-  until [ "$(find emulator/receipts -name '*.png' | wc -l)" -gt "$before" ]; do sleep 0.3; done
-  cp "$(ls -t emulator/receipts/*.png | head -1)" "$OUT/$name.png"
+  # Un ticket vide ne produit aucun rendu : on n'attend pas indéfiniment, on passe au suivant.
+  waited=0
+  until [ "$(find emulator/receipts -name '*.png' | wc -l)" -gt "$before" ]; do
+    sleep 0.3
+    waited=$((waited + 1))
+    if [ "$waited" -ge 200 ]; then echo "$name : pas de rendu après 60 s, ignoré" >&2; continue 2; fi
+  done
+  # Un ticket avec un bloc coupe sort en plusieurs morceaux : on attend qu'il n'en arrive plus.
+  count=0
+  while [ "$(find emulator/receipts -name '*.png' | wc -l)" -ne "$count" ]; do
+    count=$(find emulator/receipts -name '*.png' | wc -l)
+    sleep 1
+  done
+  mapfile -t pieces < <(find emulator/receipts -name '*.png' | sort | comm -13 "$DEMO/before" -)
+  if [ ${#pieces[@]} -eq 1 ]; then
+    cp "${pieces[0]}" "$OUT/$name.png"
+  else
+    # Les morceaux l'un sous l'autre, séparés par un trait de coupe pointillé.
+    uv run -q --with pillow python -I - "$OUT/$name.png" "${pieces[@]}" <<'EOF'
+import sys
+from PIL import Image, ImageDraw
+
+pieces = [Image.open(p).convert("L") for p in sys.argv[2:]]
+gap = 48
+width = max(p.width for p in pieces)
+out = Image.new("L", (width, sum(p.height for p in pieces) + gap * (len(pieces) - 1)), 255)
+draw = ImageDraw.Draw(out)
+y = 0
+for i, piece in enumerate(pieces):
+    if i:
+        for x in range(0, width, 16):
+            draw.line([(x, y - gap // 2), (x + 8, y - gap // 2)], fill=0, width=2)
+    out.paste(piece, (0, y))
+    y += piece.height + gap
+out.save(sys.argv[1], optimize=True)
+EOF
+  fi
   chmod 644 "$OUT/$name.png"
   echo "$OUT/$name.png"
 done

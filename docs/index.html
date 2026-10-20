@@ -6,7 +6,7 @@
 <title>Printr — des petits tickets qui font du bien</title>
 <meta name="description" content="Printr transforme une imprimante à tickets Epson TM-T88V en gadget familial : météo, horoscope, sudoku, mots mêlés, énigmes, actualités, petits mots avec photo… composés et planifiés depuis le téléphone.">
 <meta property="og:title" content="Printr — little receipts that make your day">
-<meta property="og:description" content="A thermal receipt printer, 40 blocks, a family web app and a scheduler. In Rust, on a Raspberry Pi.">
+<meta property="og:description" content="A thermal receipt printer, 47 blocks, a family web app and a scheduler. In Rust, on a Raspberry Pi.">
 <meta property="og:image" content="https://xninety9.github.io/Printr/preview.png">
 <meta property="og:type" content="website">
 <link rel="icon" href="mark.png" type="image/png">
@@ -232,29 +232,29 @@
     <h2 class="en">One receipt printer, lots of ideas.</h2>
     <div class="grid">
       <div class="card"><div class="emoji">🧩</div>
-        <h3 class="fr">40 blocs à assembler</h3><h3 class="en">40 blocks to mix</h3>
-        <p class="fr">Météo, horoscope, agenda, liste de courses, sudoku, mots fléchés, logimage, mots mêlés, voie ferrée, coloriage, énigmes, bons à offrir, actualités, photos, QR codes…</p>
-        <p class="en">Weather, horoscope, calendar, shopping list, sudoku, arrow words, nonograms, word searches, train tracks, coloring pages, riddles, gift coupons, news, photos, QR codes…</p></div>
+        <h3 class="fr">47 blocs à assembler</h3><h3 class="en">47 blocks to mix</h3>
+        <p class="fr">Météo, ciel du soir, horoscope, agenda, liste de courses, recettes, sudoku, mots croisés et fléchés, logimage, mots mêlés, voie ferrée, coloriage, énigmes, bons à offrir, actualités, photos, QR codes…</p>
+        <p class="en">Weather, tonight's sky, horoscope, calendar, shopping list, recipes, sudoku, crosswords and arrow words, nonograms, word searches, train tracks, coloring pages, riddles, gift coupons, news, photos, QR codes…</p></div>
       <div class="card"><div class="emoji">📱</div>
         <h3 class="fr">Une appli pour toute la famille</h3><h3 class="en">An app for the whole family</h3>
         <p class="fr">Chacun son compte, ses tickets enregistrés, et ceux qu'on partage. Aperçu en direct, pensée pour le téléphone.</p>
         <p class="en">Everyone gets an account, saved tickets, and shared ones. Live preview, designed for phones first.</p></div>
       <div class="card"><div class="emoji">⏰</div>
         <h3 class="fr">Planifié, au format 24 h</h3><h3 class="en">Scheduled, 24-hour clock</h3>
-        <p class="fr">« L'horoscope en semaine à 7 h 30 », « le brief du week-end à 9 h ». Pas de rattrapage à 14 h si l'imprimante dormait.</p>
-        <p class="en">“Horoscope on weekdays at 7:30”, “weekend brief at 9:00”. No 2 pm catch-up if the printer was asleep.</p></div>
+        <p class="fr">« L'horoscope en semaine à 7 h 30 », « le brief du week-end à 9 h ». Imprimante éteinte ? Le ticket attend son retour, et l'appli le signale.</p>
+        <p class="en">“Horoscope on weekdays at 7:30”, “weekend brief at 9:00”. Printer off? The ticket waits for it to come back, and the app says so.</p></div>
       <div class="card"><div class="emoji">💌</div>
         <h3 class="fr">Le petit mot</h3><h3 class="en">Little notes</h3>
         <p class="fr">Une photo prise avec le téléphone, un cœur dessiné, quelques mots : ça sort à la maison, tramé en noir et blanc.</p>
         <p class="en">A photo from your phone, a hand-drawn heart, a few words: it prints at home, dithered in black and white.</p></div>
       <div class="card"><div class="emoji">🌱</div>
         <h3 class="fr">Sobre par défaut</h3><h3 class="en">Frugal by default</h3>
-        <p class="fr">Presque tout est local et gratuit : RSS, énigmes, sudoku, mots mêlés, calendrier. Claude n'écrit que l'horoscope et le mot du jour, mis en cache pour la journée.</p>
-        <p class="en">Almost everything is local and free: RSS, riddles, sudoku, word searches, calendar. Claude only writes the horoscope and the word of the day, cached for the day.</p></div>
+        <p class="fr">Presque tout est local et gratuit : RSS, énigmes, sudoku, mots mêlés, ciel du soir, calendrier. Claude n'écrit que ce qui demande une plume : horoscope, mot du jour, définitions des grilles, recettes à la demande, toujours mis en cache.</p>
+        <p class="en">Almost everything is local and free: RSS, riddles, sudoku, word searches, tonight's sky, calendar. Claude only writes what needs a pen: horoscope, word of the day, puzzle clues, recipes on demand, always cached.</p></div>
       <div class="card"><div class="emoji">🦀</div>
         <h3 class="fr">Un seul binaire Rust</h3><h3 class="en">A single Rust binary</h3>
-        <p class="fr">ESC/POS natif pour l'Epson TM-T88V, sur un Raspberry Pi. CLI soignée, serveur, planificateur et interface web dans le même exécutable, en français ou en anglais.</p>
-        <p class="en">Native ESC/POS for the Epson TM-T88V, on a Raspberry Pi. Polished CLI, server, scheduler and web app in one executable, in English or French.</p></div>
+        <p class="fr">ESC/POS natif pour l'Epson TM-T88V, sur un Raspberry Pi. CLI soignée, serveur, planificateur et interface web dans le même exécutable, en français ou en anglais. API HTTP, MQTT et nœuds Node-RED pour la domotique.</p>
+        <p class="en">Native ESC/POS for the Epson TM-T88V, on a Raspberry Pi. Polished CLI, server, scheduler and web app in one executable, in English or French. HTTP API, MQTT and Node-RED nodes for home automation.</p></div>
     </div>
   </div>
 </section>
@@ -320,13 +320,13 @@
       <div class="group"><h3><span class="fr">Mise en page</span><span class="en">Layout</span></h3><div class="chips">
         <a class="chip" href="blocs.html#titre">🔠 <span class="fr">Titre</span><span class="en">Title</span></a><a class="chip" href="blocs.html#texte">📝 <span class="fr">Texte</span><span class="en">Text</span></a>
         <a class="chip" href="blocs.html#date">📅 Date</a><a class="chip" href="blocs.html#separateur">➖ <span class="fr">Séparateur</span><span class="en">Separator</span></a>
-        <a class="chip" href="blocs.html#espace">↕️ <span class="fr">Espace</span><span class="en">Spacing</span></a><a class="chip" href="blocs.html#image">🖼️ Image</a>
+        <a class="chip" href="blocs.html#espace">↕️ <span class="fr">Espace</span><span class="en">Spacing</span></a><a class="chip" href="blocs.html#coupe">✂️ <span class="fr">Coupe</span><span class="en">Cut</span></a><a class="chip" href="blocs.html#image">🖼️ Image</a>
         <a class="chip" href="blocs.html#qr">🔳 QR code</a><a class="chip" href="blocs.html#pictogramme">💖 <span class="fr">Pictogramme</span><span class="en">Pictogram</span></a></div></div>
       <div class="group"><h3><span class="fr">Au quotidien</span><span class="en">Daily</span></h3><div class="chips">
         <a class="chip" href="blocs.html#meteo">🌤️ <span class="fr">Météo</span><span class="en">Weather</span></a><a class="chip" href="blocs.html#horoscope">🌟 Horoscope</a><a class="chip ai" href="blocs.html#horoscope_claude">🔮 <span class="fr">Horoscope Claude</span><span class="en">Claude horoscope</span></a>
         <a class="chip ai" href="blocs.html#mot_du_jour">📖 <span class="fr">Mot du jour</span><span class="en">Word of the day</span></a><a class="chip" href="blocs.html#saint">😇 <span class="fr">Saint du jour</span><span class="en">Saint of the day</span></a>
         <a class="chip" href="blocs.html#citation">💬 <span class="fr">Citation</span><span class="en">Quote</span></a><a class="chip" href="blocs.html#lune">🌙 <span class="fr">Lune</span><span class="en">Moon</span></a>
-        <a class="chip" href="blocs.html#soleil">🌅 <span class="fr">Soleil</span><span class="en">Sun</span></a><a class="chip" href="blocs.html#air">🍃 <span class="fr">Qualité de l'air</span><span class="en">Air quality</span></a>
+        <a class="chip" href="blocs.html#soleil">🌅 <span class="fr">Soleil</span><span class="en">Sun</span></a><a class="chip" href="blocs.html#ciel">🔭 <span class="fr">Le ciel ce soir</span><span class="en">Tonight's sky</span></a><a class="chip" href="blocs.html#air">🍃 <span class="fr">Qualité de l'air</span><span class="en">Air quality</span></a>
         <a class="chip" href="blocs.html#jours_feries">🏖️ <span class="fr">Jours fériés</span><span class="en">Holidays</span></a><a class="chip" href="blocs.html#compte_a_rebours">⏳ <span class="fr">Compte à rebours</span><span class="en">Countdown</span></a></div></div>
       <div class="group"><h3><span class="fr">Jeux &amp; défis</span><span class="en">Games &amp; challenges</span></h3><div class="chips">
         <a class="chip" href="blocs.html#enigme">🧩 <span class="fr">Énigme</span><span class="en">Riddle</span></a><a class="chip" href="blocs.html#defi_sportif">💪 <span class="fr">Défi sportif</span><span class="en">Workout</span></a>
@@ -337,14 +337,14 @@
         <a class="chip" href="blocs.html#bon">🎟️ <span class="fr">Bon à offrir</span><span class="en">Gift coupon</span></a></div></div>
       <div class="group"><h3><span class="fr">Infos &amp; organisation</span><span class="en">News &amp; to-dos</span></h3><div class="chips">
         <a class="chip" href="blocs.html#actualites">📰 <span class="fr">Actualités (RSS)</span><span class="en">News (RSS)</span></a><a class="chip" href="blocs.html#ephemeride">🏛️ <span class="fr">Éphéméride</span><span class="en">On this day</span></a>
-        <a class="chip" href="blocs.html#crypto">🪙 Crypto</a><a class="chip" href="blocs.html#a_faire">✅ <span class="fr">À faire</span><span class="en">To-do</span></a>
+        <a class="chip" href="blocs.html#crypto">🪙 Crypto</a><a class="chip" href="blocs.html#a_faire">✅ <span class="fr">À faire</span><span class="en">To-do</span></a><a class="chip" href="blocs.html#recette">🍳 <span class="fr">Recette</span><span class="en">Recipe</span></a><a class="chip ai" href="blocs.html#recette_claude">👩‍🍳 <span class="fr">Recette par Claude</span><span class="en">Claude recipe</span></a>
         <a class="chip" href="blocs.html#courses">🛒 <span class="fr">Liste de courses</span><span class="en">Shopping list</span></a><a class="chip" href="blocs.html#agenda">🗓️ <span class="fr">Agenda</span><span class="en">Calendar</span></a>
         <a class="chip" href="blocs.html#poubelles">🗑️ <span class="fr">Poubelles</span><span class="en">Bin day</span></a><a class="chip" href="blocs.html#wifi">📶 <span class="fr">Wi-Fi invités</span><span class="en">Guest Wi-Fi</span></a>
         <a class="chip" href="blocs.html#bilan">🧾 <span class="fr">Bilan du mois</span><span class="en">Monthly receipt</span></a></div></div>
     </div>
     <p class="intro" style="margin-top:22px"><a href="blocs.html"><span class="fr">Chaque bloc en image, avec son exemple →</span><span class="en">Every block as printed, with its example →</span></a></p>
-    <p class="note fr">Les blocs entourés d'orange utilisent Claude Haiku : un petit appel payant par jour, mis en cache. Tout le reste est local ou passe par des API gratuites et sans clé (Open-Meteo, Wikipédia, CoinGecko).</p>
-    <p class="note en">Orange-outlined blocks use Claude Haiku: one small paid call per day, cached. Everything else is local or uses free, keyless APIs (Open-Meteo, Wikipedia, CoinGecko).</p>
+    <p class="note fr">Les blocs entourés d'orange utilisent Claude Haiku : un petit appel par jour, mis en cache, avec une clé API ou ton abonnement Claude (par la CLI Claude Code). Tout le reste est local ou passe par des API gratuites et sans clé (Open-Meteo, Wikipédia, CoinGecko).</p>
+    <p class="note en">Orange-outlined blocks use Claude Haiku: one small call per day, cached, with an API key or your Claude subscription (through the Claude Code CLI). Everything else is local or uses free, keyless APIs (Open-Meteo, Wikipedia, CoinGecko).</p>
   </div>
 </section>
 
@@ -384,8 +384,8 @@
 scripts/deploy.sh pi@printer.local   <span class="c"># mise à jour / update</span></pre></div></div>
       <div class="step"><div>
         <h3 class="fr">Créer son compte</h3><h3 class="en">Create your account</h3>
-        <p class="fr">Au premier lancement, l'appli propose de créer son compte, puis ceux de la famille. La clé Claude est facultative.</p>
-        <p class="en">On first launch, the app offers to create your account, then the family's. The Claude key is optional.</p>
+        <p class="fr">Au premier lancement, l'appli propose de créer son compte, puis ceux de la famille. La clé Claude est facultative, et un abonnement Claude peut la remplacer.</p>
+        <p class="en">On first launch, the app offers to create your account, then the family's. The Claude key is optional, and a Claude subscription can stand in for it.</p>
         <pre>http://printer.local:8080</pre></div></div>
     </div>
     <p class="intro" style="margin-top:30px"><a class="fr" href="guide.html#installation">Le guide d'installation complet →</a><a class="en" href="guide.en.html#installation">Full installation guide →</a></p>

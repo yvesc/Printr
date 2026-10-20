@@ -51,6 +51,13 @@ fn run_due(app: &App) {
             Ok(ticket) => {
                 let printed = app.print(&ticket, "planification", &name);
                 match printed.failure {
+                    None if printed.queued.is_some() => eprintln!(
+                        "{}",
+                        tr!(
+                            "planification « {name} » en attente de l'imprimante",
+                            "schedule \"{name}\" waiting for the printer"
+                        )
+                    ),
                     None => eprintln!("{}", tr!("planification « {name} » imprimée", "schedule \"{name}\" printed")),
                     Some(e) => eprintln!(
                         "{}",
