@@ -30,18 +30,34 @@ pub enum Dither {
     None,
 }
 
-/// Décode une image en bornant ses dimensions et la mémoire utilisée : une petite image
-/// compressée peut annoncer des millions de pixels et épuiser la mémoire du Pi.
+/////////////////////////////////////////////////////////////////////////////// 
+/// Méthode **decode(bytes: &[u8]) -> Result<DynamicImage>** : 
+/// 
+/// Décode une image mais en bornant ses dimensions et la mémoire utilisée : 
+/// une petite image compressée peut annoncer des millions de pixels 
+/// et épuiser la mémoire du Pi.
+/// 
+/// **Entrée** : bytes de l'image compressée (PNG, JPEG, etc.)
+/// 
+/// **Sortie** : image (type : DynamicImage)
+/////////////////////////////////////////////////////////////////////////////// 
 pub fn decode(bytes: &[u8]) -> Result<DynamicImage> {
     let mut reader = image::ImageReader::new(Cursor::new(bytes)).with_guessed_format().context("image illisible")?;
     let mut limits = image::Limits::default();
     limits.max_image_width = Some(10_000);
     limits.max_image_height = Some(10_000);
+
+    // On limite la mémoire allouée pour le décodage :
+    // 256 niveaux de gris, 1024 points de large, 1024 points de haut
+    // 256 * 1024 * 1024 octets = 256 Mo   
     limits.max_alloc = Some(256 * 1024 * 1024);
     reader.limits(limits);
     reader.decode().context("image illisible ou trop grande")
 }
 
+///////////////////////////////////////////////////////////////////////////////
+/// **prepare(img: &DynamicImage, dither: bool) -> GrayImage** :
+///  
 /// Prépare une image pour l'impression : fond blanc sous la transparence,
 /// réduction à la largeur imprimable, centrage, puis noir et blanc selon `dither`.
 pub fn prepare(img: &DynamicImage, dither: Dither) -> GrayImage {
@@ -117,12 +133,59 @@ fn bayer(gray: &mut GrayImage) {
     }
 }
 
+/// Atkinson : un huitième de l'erreur à six voisins, les deux huitièmes restants sont perdus,
+/// d'où des noirs et des blancs plus francs qu'avec Floyd–Steinberg.
+fn atkinson(gray: &mut GrayImage) {
+    let (w, h) = (gray.width() as i64, gray.height() as i64);
+    let mut buf: Vec<i32> = gray.pixels().map(|p| i32::from(p.0[0])).collect();
+    for y in 0..h {
+        for x in 0..w {
+            let i = (y * w + x) as usize;
+            let old = buf[i].clamp(0, 255);
+            let new = if old < 128 { 0 } else { 255 };
+            buf[i] = new;
+            let err = (old - new) / 8;
+            for (dx, dy) in [(1, 0), (2, 0), (-1, 1), (0, 1), (1, 1), (0, 2)] {
+                let (nx, ny) = (x + dx, y + dy);
+                if (0..w).contains(&nx) && (0..h).contains(&ny) {
+                    buf[(ny * w + nx) as usize] += err;
+                }
+            }
+        }
+    }
+    for (p, v) in gray.pixels_mut().zip(buf) {
+        p.0[0] = v as u8;
+    }
+}
+
+/// Bayer 8×8 : chaque pixel est comparé à un seuil qui dépend de sa position dans la matrice.
+fn bayer(gray: &mut GrayImage) {
+    const M: [[u8; 8]; 8] = [
+        [0, 32, 8, 40, 2, 34, 10, 42],
+        [48, 16, 56, 24, 50, 18, 58, 26],
+        [12, 44, 4, 36, 14, 46, 6, 38],
+        [60, 28, 52, 20, 62, 30, 54, 22],
+        [3, 35, 11, 43, 1, 33, 9, 41],
+        [51, 19, 59, 27, 49, 17, 57, 25],
+        [15, 47, 7, 39, 13, 45, 5, 37],
+        [63, 31, 55, 23, 61, 29, 53, 21],
+    ];
+    for (x, y, p) in gray.enumerate_pixels_mut() {
+        let threshold = (u32::from(M[(y % 8) as usize][(x % 8) as usize]) * 4 + 2) as u8;
+        p.0[0] = if p.0[0] > threshold { 255 } else { 0 };
+    }
+}
+
+
+///
 /// Charge une image depuis un fichier et la prépare pour l'impression.
 pub fn load(path: &Path, dither: Dither) -> Result<GrayImage> {
     let bytes = std::fs::read(path).with_context(|| format!("impossible de lire {}", path.display()))?;
     Ok(prepare(&decode(&bytes)?, dither))
 }
 
+
+///
 /// Envoie une image déjà préparée (largeur `PRINT_WIDTH`), découpée en bandes raster.
 /// L'imprimante ne sait pas gérer les bandes images de plus de STRIP_HEIGHT points de haut, 
 /// donc on découpe en bandes de STRIP_HEIGHT points. Cette valeur est définie en constante,
@@ -154,6 +217,12 @@ pub fn print_gray<D: Driver>(printer: &mut Printer<D>, gray: &GrayImage) -> Resu
     }
     Ok(())
 }
+
+///////////////////////////////////////////////////////////////////////////////
+/// 
+///  Tests unitaires
+///
+///////////////////////////////////////////////////////////////////////////////
 
 #[cfg(test)]
 mod tests {
