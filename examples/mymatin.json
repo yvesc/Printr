@@ -16,16 +16,16 @@
 
     { "type": "separator", "style": "~" },
     
-    { "type": "weather", "location": "Liège", "days": 3 },
-    { "type": "weather", "location": "DUBLIN", "days": 10 },
-    { "type": "weather", "location": "GALWAY", "days": 10 },
-    { "type": "weather", "location": "Burgos", "days": 5 },
+    { "type": "weather", "location": "Liège, Belgium", "days": 3 },
+    { "type": "weather", "location": "DUBLIN, Irlande", "days": 10 },
+    { "type": "weather", "location": "GALWAY, Irlande", "days": 10 },
+    { "type": "weather", "location": "Burgos, Spain", "days": 5 },
 
     { "type": "separator", "style": "~" },
     
-    { "type": "air_quality", "location": "Liège" },
-    { "type": "air_quality", "location": "DUBLIN" },
-    { "type": "air_quality", "location": "GALWAY" },
+    { "type": "air_quality", "location": "Liège, Belgium" },
+    { "type": "air_quality", "location": "DUBLIN, Irlande" },
+    { "type": "air_quality", "location": "GALWAY, Irlande" },
     { "type": "air_quality", "location": "Burgos, Spain" }
     
   ]

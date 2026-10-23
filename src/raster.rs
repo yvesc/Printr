@@ -14,21 +14,38 @@ pub const PRINT_WIDTH: u32 = 512;
 /// Hauteur des bandes envoyées en `GS v 0`, pour ne pas saturer le tampon de l'imprimante.
 const STRIP_HEIGHT: u32 = 256;
 
-/// Décode une image en bornant ses dimensions et la mémoire utilisée : une petite image
-/// compressée peut annoncer des millions de pixels et épuiser la mémoire du Pi.
+/////////////////////////////////////////////////////////////////////////////// 
+/// Méthode **decode(bytes: &[u8]) -> Result<DynamicImage>** : 
+/// 
+/// Décode une image mais en bornant ses dimensions et la mémoire utilisée : 
+/// une petite image compressée peut annoncer des millions de pixels 
+/// et épuiser la mémoire du Pi.
+/// 
+/// **Entrée** : bytes de l'image compressée (PNG, JPEG, etc.)
+/// 
+/// **Sortie** : image (type : DynamicImage)
+/////////////////////////////////////////////////////////////////////////////// 
 pub fn decode(bytes: &[u8]) -> Result<DynamicImage> {
     let mut reader = image::ImageReader::new(Cursor::new(bytes)).with_guessed_format().context("image illisible")?;
     let mut limits = image::Limits::default();
     limits.max_image_width = Some(10_000);
     limits.max_image_height = Some(10_000);
+
+    // On limite la mémoire allouée pour le décodage :
+    // 256 niveaux de gris, 1024 points de large, 1024 points de haut
+    // 256 * 1024 * 1024 octets = 256 Mo   
     limits.max_alloc = Some(256 * 1024 * 1024);
     reader.limits(limits);
     reader.decode().context("image illisible ou trop grande")
 }
 
+///////////////////////////////////////////////////////////////////////////////
+/// **prepare(img: &DynamicImage, dither: bool) -> GrayImage** :
+///  
 /// Prépare une image pour l'impression : fond blanc sous la transparence,
 /// réduction à la largeur imprimable, centrage, puis noir et blanc
 /// (tramage Floyd–Steinberg, ou simple seuil si `dither` est faux).
+/////////////////////////////////////////////////////////////////////////////// 
 pub fn prepare(img: &DynamicImage, dither: bool) -> GrayImage {
     // resize
     let img =
@@ -61,12 +78,17 @@ pub fn prepare(img: &DynamicImage, dither: bool) -> GrayImage {
     gray
 }
 
+
+///
 /// Charge une image depuis un fichier et la prépare pour l'impression.
+/// 
 pub fn load(path: &Path, dither: bool) -> Result<GrayImage> {
     let bytes = std::fs::read(path).with_context(|| format!("impossible de lire {}", path.display()))?;
     Ok(prepare(&decode(&bytes)?, dither))
 }
 
+
+///
 /// Envoie une image déjà préparée (largeur `PRINT_WIDTH`), découpée en bandes raster.
 /// L'imprimante ne sait pas gérer les bandes images de plus de STRIP_HEIGHT points de haut, 
 /// donc on découpe en bandes de STRIP_HEIGHT points. Cette valeur est définie en constante,
@@ -98,6 +120,12 @@ pub fn print_gray<D: Driver>(printer: &mut Printer<D>, gray: &GrayImage) -> Resu
     }
     Ok(())
 }
+
+///////////////////////////////////////////////////////////////////////////////
+/// 
+///  Tests unitaires
+///
+///////////////////////////////////////////////////////////////////////////////
 
 #[cfg(test)]
 mod tests {
