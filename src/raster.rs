@@ -56,10 +56,7 @@ pub fn decode(bytes: &[u8]) -> Result<DynamicImage> {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-/// **prepare(img: &DynamicImage, dither: bool) -> GrayImage** :
-///  
-///////////////////////////////////////////////////////////////////////////////
-/// **prepare(img: &DynamicImage, dither: bool) -> GrayImage** :
+/// **prepare(img: &DynamicImage, dither: Dither) -> GrayImage** :
 ///  
 /// Prépare une image pour l'impression : fond blanc sous la transparence,
 /// réduction à la largeur imprimable, centrage, puis noir et blanc selon `dither`.
